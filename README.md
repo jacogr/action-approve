@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: jacogr/action-approve@master
       with:
-	    authors: jacogr
-	    labels: autoapprove
+	authors: jacogr
+	labels: autoapprove
         token: ${{ secrets.GITHUB_TOKEN }}
 ```
