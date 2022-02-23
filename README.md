@@ -1,6 +1,8 @@
 ## action-approve
 
-Approve GithUb actions based on labels and authors. Config -
+Approve GitHub actions based on labels and authors. 
+
+Example config -
 
 ```
 name: Auto-approve pull request
