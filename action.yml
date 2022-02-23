@@ -1,0 +1,15 @@
+name: 'Auto Approve'
+description: 'Automatically approve pull requests'
+inputs:
+  authors:
+    description: 'A list of authors this should apply to'
+    required: true
+  labels:
+    description: 'A list of labels this should apply to'
+    required: true
+  token:
+    description: 'The GITHUB_TOKEN secret'
+    required: true
+runs:
+  using: 'node14'
+  main: 'index.js'
