@@ -11273,6 +11273,56 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 4177:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+// SPDX-License-Identifier: Apache-2.0
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const github_1 = __nccwpck_require__(5438);
+const core_1 = __nccwpck_require__(2186);
+// check that the context is indeed for a PR
+function hasPR(context) {
+    return !!context.payload.pull_request;
+}
+function main() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // get the variable defined in the action
+        const checkAuthors = (0, core_1.getInput)('authors').split(',');
+        const checkLabels = (0, core_1.getInput)('labels').split(',');
+        const octokit = (0, github_1.getOctokit)((0, core_1.getInput)('token'));
+        // bail if we are not called as part of a PR
+        if (!hasPR(github_1.context)) {
+            throw new Error('action needs to be run as part of a pull request');
+        }
+        // extract label names, they would be easier to map on below
+        const labels = github_1.context.payload.pull_request.labels.map(({ name }) => name);
+        if (
+        // one of the authors needs to be the PR author
+        checkAuthors.includes(github_1.context.payload.pull_request.user.login) &&
+            // one of the labels needs to match the defined labels
+            checkLabels.some((l) => labels.includes(l))) {
+            // approve (we may want to leave comments in the future as well)
+            yield octokit.rest.pulls.createReview(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: github_1.context.payload.pull_request.number, event: 'APPROVE' }));
+        }
+    });
+}
+;
+main().catch(({ message }) => (0, core_1.setFailed)(message));
+
+
+/***/ }),
+
 /***/ 9491:
 /***/ ((module) => {
 
@@ -11511,34 +11561,12 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
-const github = __nccwpck_require__(5438);
-const core = __nccwpck_require__(2186);
-
-async function main () {
-	const checkAuthors = core.getInput('authors').split(',');
-	const checkLabels = core.getInput('labels').split(',');
-	const octokit = github.getOctokit(core.getInput('token'));
-	const labels = github.context.payload.pull_request.labels.map(({ name }) => name);
-
-	if (
-		checkAuthors.some((a) => github.context.payload.pull_request.user.login === a) &&
-		checkLabels.some((l) => labels.includes(l))
-	) {
-		await octokit.rest.pulls.createReview({
-			...github.context.repo,
-			pull_number: github.context.payload.pull_request.number,
-			event: 'APPROVE'
-		});
-	}
-};
-
-main().catch(({ message }) => core.setFailed(message));
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(4177);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
