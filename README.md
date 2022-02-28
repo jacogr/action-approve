@@ -20,3 +20,13 @@ jobs:
           labels: autoapprove
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+To only run on labelled PRs, the following adjustment to the on logic can be made -
+
+```
+...
+on:
+  pull_request:
+    types: [labeled]
+...
+```
