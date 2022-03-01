@@ -28,14 +28,14 @@ async function main () {
 	}
 
 	// get the variables defined in the action
-	const checkAuthors = getInputs('authors');
-	const checkLabels = getInputs('labels');
+	const authors = getInputs('authors');
+	const labels = getInputs('labels');
 
 	if (
 		// one of the authors needs to be the PR author
-		pr.user && checkAuthors.includes(pr.user.login) &&
+		pr.user && authors.includes(pr.user.login) &&
 		// one of the labels needs to match the defined labels
-		pr.labels.some(({ name }) => checkLabels.includes(name || ''))
+		pr.labels.some(({ name }) => labels.includes(name || ''))
 	) {
 		// approve (we may want to leave comments in the future as well)
 		await getOctokit(getInput('token')).rest.pulls.createReview({

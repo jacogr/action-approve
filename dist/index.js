@@ -11309,14 +11309,13 @@ function main() {
             throw new Error('action needs to be run as part of a pull request');
         }
         // get the variables defined in the action
-        const checkAuthors = getInputs('authors');
-        const checkLabels = getInputs('labels');
+        const authors = getInputs('authors');
+        const labels = getInputs('labels');
         if (
         // one of the authors needs to be the PR author
-        pr.user &&
-            checkAuthors.includes(pr.user.login) &&
+        pr.user && authors.includes(pr.user.login) &&
             // one of the labels needs to match the defined labels
-            pr.labels.some(({ name }) => checkLabels.includes(name || ''))) {
+            pr.labels.some(({ name }) => labels.includes(name || ''))) {
             // approve (we may want to leave comments in the future as well)
             yield (0, github_1.getOctokit)((0, core_1.getInput)('token')).rest.pulls.createReview(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: pr.number, event: 'APPROVE' }));
         }
