@@ -1,58 +1,46 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import type { components } from '@octokit/openapi-types';
+
 import { context, getOctokit } from '@actions/github';
 import { getInput, setFailed } from '@actions/core';
 
-type Context = typeof context;
-
-interface Label {
-	name: string;
-}
-
-interface User {
-	login: string;
-}
-
-// extend the context with the known PR fields
-// (that we are using)
-type ContextWithPR = Context & {
-	payload: {
-		pull_request: {
-			labels: Label[];
-			user: User;
-		}
-	}
-}
+type PR = components['schemas']['pull-request-simple'];
 
 // check that the context is indeed for a PR
-function hasPR (context: Context): context is ContextWithPR {
-	return !!context.payload.pull_request;
+function isPR (pr: unknown): pr is PR {
+	return !!pr;
+}
+
+// split a variable into parts and trim along the way
+function getInputs (type: 'authors' | 'labels'): string[] {
+	return getInput(type)
+		.split(',')
+		.map((s) => s.trim());
 }
 
 async function main () {
-	// get the variable defined in the action
-	const checkAuthors = getInput('authors').split(',');
-	const checkLabels = getInput('labels').split(',');
-	const octokit = getOctokit(getInput('token'));
-
 	// bail if we are not called as part of a PR
-	if (!hasPR(context)) {
+	const pr = context.payload.pull_request;
+
+	if (!isPR(pr)) {
 		throw new Error('action needs to be run as part of a pull request');
 	}
 
-	// extract label names, they would be easier to map on below
-	const labels = context.payload.pull_request.labels.map(({ name }) => name);
+	// get the variables defined in the action
+	const checkAuthors = getInputs('authors');
+	const checkLabels = getInputs('labels');
 
 	if (
 		// one of the authors needs to be the PR author
-		checkAuthors.includes(context.payload.pull_request.user.login) &&
+		pr.user && checkAuthors.includes(pr.user.login) &&
 		// one of the labels needs to match the defined labels
-		checkLabels.some((l) => labels.includes(l))
+		pr.labels.some(({ name }) => checkLabels.includes(name || ''))
 	) {
 		// approve (we may want to leave comments in the future as well)
-		await octokit.rest.pulls.createReview({
+		await getOctokit(getInput('token')).rest.pulls.createReview({
 			...context.repo,
-			pull_number: context.payload.pull_request.number,
+			pull_number: pr.number,
 			event: 'APPROVE'
 		});
 	}

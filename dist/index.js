@@ -11292,28 +11292,33 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github_1 = __nccwpck_require__(5438);
 const core_1 = __nccwpck_require__(2186);
 // check that the context is indeed for a PR
-function hasPR(context) {
-    return !!context.payload.pull_request;
+function isPR(pr) {
+    return !!pr;
+}
+// split a variable into parts and trim along the way
+function getInputs(type) {
+    return (0, core_1.getInput)(type)
+        .split(',')
+        .map((s) => s.trim());
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        // get the variable defined in the action
-        const checkAuthors = (0, core_1.getInput)('authors').split(',');
-        const checkLabels = (0, core_1.getInput)('labels').split(',');
-        const octokit = (0, github_1.getOctokit)((0, core_1.getInput)('token'));
         // bail if we are not called as part of a PR
-        if (!hasPR(github_1.context)) {
+        const pr = github_1.context.payload.pull_request;
+        if (!isPR(pr)) {
             throw new Error('action needs to be run as part of a pull request');
         }
-        // extract label names, they would be easier to map on below
-        const labels = github_1.context.payload.pull_request.labels.map(({ name }) => name);
+        // get the variables defined in the action
+        const checkAuthors = getInputs('authors');
+        const checkLabels = getInputs('labels');
         if (
         // one of the authors needs to be the PR author
-        checkAuthors.includes(github_1.context.payload.pull_request.user.login) &&
+        pr.user &&
+            checkAuthors.includes(pr.user.login) &&
             // one of the labels needs to match the defined labels
-            checkLabels.some((l) => labels.includes(l))) {
+            pr.labels.some(({ name }) => checkLabels.includes(name || ''))) {
             // approve (we may want to leave comments in the future as well)
-            yield octokit.rest.pulls.createReview(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: github_1.context.payload.pull_request.number, event: 'APPROVE' }));
+            yield (0, github_1.getOctokit)((0, core_1.getInput)('token')).rest.pulls.createReview(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: pr.number, event: 'APPROVE' }));
         }
     });
 }

@@ -24,9 +24,13 @@ jobs:
 To only run on labelled PRs, the following adjustment to the on logic can be made -
 
 ```
-...
 on:
   pull_request:
     types: [labeled]
-...
 ```
+
+Required fields are -
+
+- `authors` - a comma-seperated list of authors this applies to
+- `labels` - a comma-seperated list of labels this applies to
+- `token` - a secret GitHub token (with applicable repo rights)
