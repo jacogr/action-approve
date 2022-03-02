@@ -13,7 +13,6 @@ jobs:
   auto-approve:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: jacogr/action-approve@master
         with:
           authors: jacogr
