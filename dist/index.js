@@ -11316,8 +11316,17 @@ function main() {
         pr.user && authors.includes(pr.user.login) &&
             // one of the labels needs to match the defined labels
             pr.labels.some(({ name }) => labels.includes(name || ''))) {
+            // create a client instance
+            const client = (0, github_1.getOctokit)((0, core_1.getInput)('token'));
+            // get the current reviewers
+            const { data: reviews } = yield client.rest.pulls.listReviews(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: pr.number }));
+            // if there are existing reviews, we don't do anything
+            // TODO: Check against a list of approved reviewers?
+            if (reviews.filter(({ user }) => !!user).length !== 0) {
+                return;
+            }
             // approve (we may want to leave comments in the future as well)
-            yield (0, github_1.getOctokit)((0, core_1.getInput)('token')).rest.pulls.createReview(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: pr.number, event: 'APPROVE' }));
+            yield client.rest.pulls.createReview(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: pr.number, event: 'APPROVE' }));
         }
     });
 }

@@ -37,8 +37,23 @@ async function main () {
 		// one of the labels needs to match the defined labels
 		pr.labels.some(({ name }) => labels.includes(name || ''))
 	) {
+		// create a client instance
+		const client = getOctokit(getInput('token'));
+
+		// get the current reviewers
+		const { data: reviews } = await client.rest.pulls.listReviews({
+			...context.repo,
+			pull_number: pr.number,
+		});
+
+		// if there are existing reviews, we don't do anything
+		// TODO: Check against a list of approved reviewers?
+		if (reviews.filter(({ user }) => !!user).length !== 0) {
+			return;
+		}
+
 		// approve (we may want to leave comments in the future as well)
-		await getOctokit(getInput('token')).rest.pulls.createReview({
+		await client.rest.pulls.createReview({
 			...context.repo,
 			pull_number: pr.number,
 			event: 'APPROVE'
